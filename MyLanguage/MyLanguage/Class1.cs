@@ -13,7 +13,15 @@ public class Class1
             var lexer = new Lexer(line);
             while (true)
             {
-                var token = lexer.NextToken()
+                var token = lexer.NextToken();
+                if (token.Kind == SyntaxKind.EndOfFileToken)
+                    break;
+                Console.Write($"{token.Kind}: '{token.Text}' ");
+                
+                if (token.Value != null)
+                    Console.Write($"{token.Value}");
+
+                Console.WriteLine();
             }
         }
     }
@@ -29,7 +37,10 @@ enum SyntaxKind
     SlashToken,
     OpenParenthesisToken,
     CloseParenthesisToken,
-    BadToken
+    BadToken,
+    EndOfFileToken,
+    NumberExpression,
+    BinaryExpression
 }
 
 class SyntaxToken
@@ -75,8 +86,8 @@ class Lexer
     }
     public SyntaxToken NextToken()
     {
-        if(_position >= _text.Length)
-            return new SyntaxToken(S)
+        if (_position >= _text.Length)
+            return new SyntaxToken(SyntaxKind.EndOfFileToken, _position, "\0", null);
         
         if (char.IsDigit(Current))
         {
@@ -100,7 +111,7 @@ class Lexer
 
             var length = _position - start;
             var text = _text.Substring(start, length);
-            int.TryParse(text, out var value);
+            object? value = null;
             return new SyntaxToken(SyntaxKind.WhitespaceToken, start, text, value);
         }
 
@@ -116,7 +127,85 @@ class Lexer
             return new SyntaxToken(SyntaxKind.OpenParenthesisToken, _position++, "(", null);
         else if (Current == ')')
             return new SyntaxToken(SyntaxKind.CloseParenthesisToken, _position++, ")", null);
-        
-        return new SyntaxToken(SyntaxKind.BadToken, _position++, _text.Substring(_position - 1, 1), null)
+
+        return new SyntaxToken(SyntaxKind.BadToken, _position++, _text.Substring(_position - 1, 1), null);
     }
+}
+
+abstract class SyntaxNode
+{
+    public abstract SyntaxKind Kind { get; }
+}
+
+abstract class ExpressionSyntax : SyntaxNode
+{
+    
+}
+
+sealed class NumberExpressionSyntax : ExpressionSyntax
+{
+    public NumberExpressionSyntax(SyntaxToken numberToken)
+    {
+        NumberToken = numberToken;
+    }
+
+    public override SyntaxKind Kind => SyntaxKind.NumberExpression;
+    public SyntaxToken NumberToken { get; }
+}
+
+sealed class BinaryExpressionSyntax : ExpressionSyntax
+{
+    public ExpressionSyntax Left { get; }
+    public SyntaxNode OperationToken { get; }
+    public ExpressionSyntax Right { get; }
+
+    public BinaryExpressionSyntax(ExpressionSyntax left, SyntaxNode operationToken, ExpressionSyntax right)
+    {
+        Left = left;
+        OperationToken = operationToken;
+        Right = right;
+    }
+
+    public override SyntaxKind Kind => SyntaxKind.BinaryExpression;
+}
+
+class Parser
+{
+    private readonly SyntaxToken[] _tokens;
+    private int _position;
+
+    public Parser(string text)
+    {
+        var tokens = new List<SyntaxToken>();
+        
+        var lexer = new Lexer(text);
+        SyntaxToken token;
+        do
+        {
+            token = lexer.NextToken();
+            if (token.Kind != SyntaxKind.WhitespaceToken &&
+                token.Kind != SyntaxKind.BadToken)
+            {
+                tokens.Add(token);
+            }
+        } while (token.Kind != SyntaxKind.EndOfFileToken);
+
+        _tokens = tokens.ToArray();
+    }
+
+    private SyntaxToken Peek(int offset)
+    {
+        var index = _position + offset;
+        if (index >= _tokens.Length)
+            return _tokens[_tokens.Length - 1];
+
+        return _tokens[index];
+    }
+
+    private SyntaxToken Current => Peek(0);
+
+    // public ExpressionSyntax Parse()
+    // {
+    //     
+    // }
 }
