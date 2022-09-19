@@ -15,7 +15,7 @@ enum SyntaxKind
     EndOfFileToken,
     
     // Expressions
-    NumberExpression,
+    LiteralExpression,
     BinaryExpression,
     ParenthesizedExpression
 }
