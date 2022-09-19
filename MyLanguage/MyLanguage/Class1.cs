@@ -8,7 +8,7 @@ public class Class1
 {
     public void Start()
     {
-        bool showTree = false;
+        var showTree = false;
         while (true)
         {
             var line = Console.ReadLine();
@@ -30,10 +30,9 @@ public class Class1
             var syntaxTree = SyntaxTree.Parse(line);
             if (showTree)
             {
-                var color = Console.ForegroundColor;
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 PrettyPrint(syntaxTree.Root);
-                Console.ForegroundColor = color;
+                Console.ResetColor();
             }
 
             if (syntaxTree.Diagnostics.Any())
@@ -42,7 +41,7 @@ public class Class1
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 foreach (var diagnostic in syntaxTree.Diagnostics)
                     Console.WriteLine(diagnostic);
-                Console.ForegroundColor = color;
+                Console.ResetColor();
             }
             else
             {

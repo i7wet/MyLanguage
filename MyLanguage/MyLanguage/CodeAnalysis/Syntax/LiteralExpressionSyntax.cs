@@ -1,8 +1,8 @@
 ﻿namespace MyLanguage.CodeAnalysis.Syntax;
 
-sealed class NumberExpressionSyntax : ExpressionSyntax
+sealed class LiteralExpressionSyntax : ExpressionSyntax
 {
-    public NumberExpressionSyntax(SyntaxToken numberToken)
+    public LiteralExpressionSyntax(SyntaxToken numberToken)
     {
         NumberToken = numberToken;
     }
