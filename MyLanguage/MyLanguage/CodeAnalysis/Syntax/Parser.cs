@@ -87,6 +87,18 @@ class Parser
             return new ParenthesizedExpressionSyntax(left, expression, right);
         }
         
+        if (Current.Kind == SyntaxKind.MinusToken)
+        {
+            var minusToken = MatchToken(SyntaxKind.MinusToken);
+            return new UnaryExpressionSyntax(minusToken, ParsePrimaryExpression());
+        }
+
+        if (Current.Kind == SyntaxKind.PlusToken)
+        {
+            var plusToken = MatchToken(SyntaxKind.PlusToken);
+            return new UnaryExpressionSyntax(plusToken, ParsePrimaryExpression());
+        }
+        
         var numberToken = MatchToken(SyntaxKind.NumberToken);
         return new LiteralExpressionSyntax(numberToken);
     }
