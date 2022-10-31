@@ -83,7 +83,6 @@ class Parser
             var right = ParseBinaryExpression(precedence);
             left = new BinaryExpressionSyntax(left, operatorToken, right);
         }
-        
         return left;
     }
 
