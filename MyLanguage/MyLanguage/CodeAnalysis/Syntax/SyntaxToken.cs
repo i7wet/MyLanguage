@@ -1,5 +1,7 @@
-﻿namespace MyLanguage.CodeAnalysis.Syntax;
+﻿using System.Diagnostics;
 
+namespace MyLanguage.CodeAnalysis.Syntax;
+[DebuggerDisplay("{Kind}")]
 class SyntaxToken : SyntaxNode
 {
     public override SyntaxKind Kind { get; }

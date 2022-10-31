@@ -56,14 +56,23 @@ class Parser
     
     public SyntaxTree Parse()
     {
-        var expression = ParseExpression();
+        var expression = ParseBinaryExpression();
         var endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
         return new SyntaxTree(_diagnostics, expression, endOfFileToken);
     }
 
-    private ExpressionSyntax ParseExpression(int parentPrecedence = 0)
+    private ExpressionSyntax ParseBinaryExpression(int parentPrecedence = 0)
     {
-        var left = ParsePrimaryExpression();
+        ExpressionSyntax left;
+        if (Current.Kind.GetUnaryOperatorPrecedence() != 0)
+        {
+            var precedence = Current.Kind.GetUnaryOperatorPrecedence();
+            var nextToken = NextToken();
+            var expression = ParseBinaryExpression(precedence);
+            left = new UnaryExpressionSyntax(nextToken, expression);
+        }
+        else 
+            left = ParsePrimaryExpression();
         while (true)
         {
             var precedence = Current.Kind.GetBinaryOperatorPrecedence();
@@ -71,7 +80,7 @@ class Parser
                 break;
 
             var operatorToken = NextToken();
-            var right = ParseExpression(precedence);
+            var right = ParseBinaryExpression(precedence);
             left = new BinaryExpressionSyntax(left, operatorToken, right);
         }
         return left;
@@ -82,24 +91,13 @@ class Parser
         if (Current.Kind == SyntaxKind.OpenParenthesisToken)
         {
             var left = NextToken();
-            var expression = ParseExpression();
+            var expression = ParseBinaryExpression();
             var right = MatchToken(SyntaxKind.CloseParenthesisToken);
             return new ParenthesizedExpressionSyntax(left, expression, right);
         }
-        
-        if (Current.Kind == SyntaxKind.MinusToken)
-        {
-            var minusToken = MatchToken(SyntaxKind.MinusToken);
-            return new UnaryExpressionSyntax(minusToken, ParsePrimaryExpression());
-        }
 
-        if (Current.Kind == SyntaxKind.PlusToken)
-        {
-            var plusToken = MatchToken(SyntaxKind.PlusToken);
-            return new UnaryExpressionSyntax(plusToken, ParsePrimaryExpression());
-        }
-        
         var numberToken = MatchToken(SyntaxKind.NumberToken);
         return new LiteralExpressionSyntax(numberToken);
     }
+    
 }
